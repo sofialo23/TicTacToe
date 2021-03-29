@@ -93,11 +93,14 @@ class Game extends React.Component {
   }
 
   render() {
+    const active = {"font-weight": "bold"};
+    const inactive = {"font-weight": "normal"}
+    console.log(active);
     const history = this.state.history;
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
     const position = this.state.position;
-     console.log(position);
+    console.log(position);
     const moves = history.map((step, move) => {
       //step is the current array element
       //move is the index
@@ -111,19 +114,14 @@ class Game extends React.Component {
           desc = 'Go to move # ' + move + " " + "(" + position[move-1] + ")";
         }
 
+       let styling = move === this.state.stepNumber? active: inactive;
         return(
           <li key={move}>
-            <button className="movesBtn" onClick={() => this.jumpTo(move)}>{desc}</button>
+            <button className="movesBtn" style = {styling} onClick={() => this.jumpTo(move)}>{desc}</button>
           </li>
         )
       }
       
-      /*
-      const desc = move ? 
-      'Go to move # ' + move + " " + "(" + position[move-1] + ")" :
-      'Go to game start';
-*/
-     
     })
 
 
