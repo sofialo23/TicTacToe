@@ -5,12 +5,14 @@ import './index.css';
 
 
 function Square(props) {
-
+ const winningSquareStyle = {
+    backgroundColor: '#85ff85'
+  };
     return (
       <button 
         className="square" 
         onClick={props.onClick}
-      >
+        style={props.winningSquare === true ? winningSquareStyle : null}>
         {props.value}
       </button>
     );
@@ -19,8 +21,19 @@ function Square(props) {
 class Board extends React.Component {
 
   renderSquare(i, pos) {
+    let winningSquare = false;
+    const allwinningSquare = this.props.winner;
+    if(allwinningSquare != null){
+      for(let j = 0; j < 8; j++){
+        if (allwinningSquare[j] === i){
+          winningSquare =true;
+          break;
+        }
+      } 
+    }
+
     return (
-        <Square 
+        <Square winningSquare = {winningSquare}
           value={this.props.squares[i]} 
           onClick={() => this.props.onClick(i,pos)}
         />
@@ -62,6 +75,7 @@ class Game extends React.Component {
       xIsNext: true,
       stepNumber: 0,
       position: [],
+      ascending: true,
     };
   }
 
@@ -89,23 +103,51 @@ class Game extends React.Component {
       stepNumber: step,
       xIsNext: (step % 2) === 0,
       position: this.state.position.slice(0, step),
+      ascending: this.state.ascending,
     })
   }
 
+  handleToggle(){
+    this.setState({
+      ascending: !this.state.ascending,
+    });
+  }
+
   render() {
-    const active = {"font-weight": "bold"};
-    const inactive = {"font-weight": "normal"}
-    console.log(active);
+    const active = {"fontWeight": "bold"};
+    const inactive = {"fontWeight": "normal"}
     const history = this.state.history;
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
     const position = this.state.position;
-    console.log(position);
+    let value = this.state.stepNumber;
     const moves = history.map((step, move) => {
       //step is the current array element
       //move is the index
+    
+      if(this.state.ascending === false){
+        let sendValue = value;
+        console.log("Value is : " + value); 
+        let desc = '';
+        if(value === 0){
+          desc = 'Go to game start';
+        }
+        else if(position[value-1]){
+          desc = 'Go to move # ' + value + " " + "(" + position[value-1] + ")";
+        }
+        value--;
+        console.log("Value second time is : " + value);
+       let styling = (value + 1) === this.state.stepNumber? active: inactive;
+        if(desc !== '')
+          return(
+            <li className= "stepsButtons" key={sendValue}>
+              <button className="movesBtn" style = {styling} onClick={() => this.jumpTo(sendValue )}>{desc}</button>
+            </li>
+          )
+      } // end of ascending check
 
-      if(move <= this.state.stepNumber){
+      else{
+         if(move <= this.state.stepNumber){
         let desc = '';
         if(!move){
           desc = 'Go to game start';
@@ -116,22 +158,23 @@ class Game extends React.Component {
 
        let styling = move === this.state.stepNumber? active: inactive;
         return(
-          <li key={move}>
+          <li className= "stepsButtons" key={move}>
             <button className="movesBtn" style = {styling} onClick={() => this.jumpTo(move)}>{desc}</button>
           </li>
         )
       }
-      
-    })
+      } // end of else
+     
+      }) // end of moves map
 
 
     let status;
 
     if(winner){
-      status = "Winner " + winner;
+      status = "Winner " + winner[0]; // to only show X or O and not the winningn indexes
     }
     else{
-      status = "Next Player: " + (this.state.xIsNext ? 'X' : '0');
+      status = 'Next Player: "' + (this.state.xIsNext ? 'X' : '0') + '"';
     }
     return (
       <div className = "container">
@@ -141,13 +184,17 @@ class Game extends React.Component {
       <div className="game">
       
         <div className="game-board">
-          <Board 
+          <Board
+            winner = {winner}
             squares = {current.squares}
             onClick = {(i ,pos) => this.handleClick(i, pos)} 
           />
         </div>
         <div className="game-info">
-          <div>{status}</div>
+          <div id="status">{status}</div>
+          <div>
+            <button className = "toggleButton" onClick= {() => this.handleToggle()} >Change order</button>
+          </div>
           <ol>{moves}</ol>
         </div>
       </div>
@@ -178,7 +225,8 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      let valuetoReturn = [squares[a], a, b, c];
+      return valuetoReturn;
     }
   }
   return null;

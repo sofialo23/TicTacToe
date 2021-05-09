@@ -82,9 +82,16 @@ ol, ul {
 }
 
 
-
+#status{
+  font-weight: bold;
+  margin: 10px;
+}
 @media only screen and (max-width: 550px) {
   .game-board, .game-info{
     transform: scale(0.6);
   }
+}
+
+.crazyRed{
+  background-color: red;
 }
